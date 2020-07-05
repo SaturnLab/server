@@ -9,6 +9,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import com.hazelcast.core.HazelcastInstance;
+import com.qiniu.util.StringUtils;
 import com.xiaoleilu.hutool.log.Log;
 import com.xiaoleilu.hutool.log.StaticLog;
 import com.xiaoleilu.hutool.util.DateUtil;
@@ -47,13 +48,13 @@ public class FileAction extends Action {
         }
 
         final File file = getFileByPath(request.getPath());
-        Logger.debug("Client [{}] get file [{}]", request.getIp(), file.getPath());
 
         // 隐藏文件，跳过
-        if (file.isHidden() || !file.exists()) {
+        if (file ==  null || file.isHidden() || !file.exists()) {
             response.sendError(HttpResponseStatus.NOT_FOUND, "404 File not found!");
             return true;
         }
+        Logger.debug("Client [{}] get file [{}]", request.getIp(), file.getPath());
 
         // 非文件，跳过
         if (false == file.isFile()) {
@@ -110,7 +111,7 @@ public class FileAction extends Action {
 
 		// 路径安全检查
         String path = httpPath.substring(0, httpPath.lastIndexOf("/"));
-		if (path.contains("/.") || path.contains("./") || path.charAt(0) == '.' || path.charAt(path.length() - 1) == '.' || ReUtil.isMatch(INSECURE_URI, path)) {
+		if (StringUtils.isNullOrEmpty(path) || path.contains("/.") || path.contains("./") || path.charAt(0) == '.' || path.charAt(path.length() - 1) == '.' || ReUtil.isMatch(INSECURE_URI, path)) {
 			return null;
 		}
 
